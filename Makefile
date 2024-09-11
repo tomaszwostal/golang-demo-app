@@ -1,6 +1,6 @@
-ENV	:= $(PWD)/.env
-include $(ENV)
-OS := $(shell uname -s)
+# ENV	:= $(PWD)/.env
+# include $(ENV)
+# OS := $(shell uname -s)
 
 # Change these variables as necessary.
 main_package_path = ./cmd/demo
