@@ -1,9 +1,14 @@
+# ENV	:= $(PWD)/.env
+# include $(ENV)
+# OS := $(shell uname -s)
+
 # Change these variables as necessary.
 main_package_path = ./cmd/demo
 binary_name = demo
 
 .PHONY: audit
 audit: test 
+	go get -u ./...
 	go mod tidy -diff
 	go mod verify
 	go vet ./...
