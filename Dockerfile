@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 RUN go mod download
-RUN go get -u ./...
+RUN go mod tidy
 
 COPY . .
 # Run audit and test
