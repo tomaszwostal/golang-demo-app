@@ -23,17 +23,154 @@ type Repository struct {
     DB *gorm.DB
 }
 
-// ... (pozostała część kodu)
+type Plant struct {
+    Name    string `json:"name"`
+    Species string `json:"species"`
+    Plan    string `json:"plan"`
+}
+
+func (r *Repository) CreatePlant(context *fiber.Ctx) error {
+    plant := Plant{}
+
+    err := context.BodyParser(&plant)
+    if err != nil {
+        context.Status(http.StatusUnprocessableEntity).JSON(
+            &fiber.Map{"message": "request failed"})
+        return err
+    }
+
+    err = r.DB.Create(&plant).Error
+    if err != nil {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "could not create plant"})
+        return err
+    }
+
+    context.Status(http.StatusOK).JSON(&fiber.Map{
+        "message": "plant created"})
+    return nil
+}
+
+func (r *Repository) GetPlants(context *fiber.Ctx) error {
+    plantModels := &[]models.Plants{}
+
+    err := r.DB.Find(plantModels).Error
+    if err != nil {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "could not get plants"})
+        return err
+    }
+
+    context.Status(http.StatusOK).JSON(&fiber.Map{
+        "message": "plants fetched successfully",
+        "data":    plantModels,
+    })
+    return nil
+}
+
+func (r *Repository) DeletePlant(context *fiber.Ctx) error {
+    plantModel := models.Plants{}
+    id := context.Params("id")
+
+    if id == "" {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "id is required"})
+        return nil
+    }
+    err := r.DB.Delete(&plantModel, id).Error
+    if err != nil {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "could not delete plant"})
+        return err
+    }
+
+    context.Status(http.StatusOK).JSON(&fiber.Map{
+        "message": "plant deleted successfully"})
+    return nil
+}
+
+func (r *Repository) GetPlantByID(context *fiber.Ctx) error {
+    plantModel := &models.Plants{}
+    id := context.Params("id")
+
+    if id == "" {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "id is required"})
+        return nil
+    }
+    fmt.Println("The id is: ", id)
+
+    err := r.DB.Where("id = ?", id).First(plantModel).Error
+    if err != nil {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "could not get plant"})
+        return err
+    }
+    context.Status(http.StatusOK).JSON(&fiber.Map{
+        "message": "plant fetched successfully",
+        "data":    plantModel,
+    })
+
+    return nil
+}
+
+func (r *Repository) UpdatePlant(context *fiber.Ctx) error {
+    plantModel := models.Plants{}
+    id := context.Params("id")
+
+    if id == "" {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "id is required"})
+        return nil
+    }
+
+    err := r.DB.Where("id = ?", id).First(&plantModel).Error
+    if err != nil {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "could not get plant"})
+        return err
+    }
+    err = context.BodyParser(&plantModel)
+    if err != nil {
+        context.Status(http.StatusUnprocessableEntity).JSON(
+            &fiber.Map{"message": "request failed"})
+        return err
+    }
+    err = r.DB.Save(&plantModel).Error
+    if err != nil {
+        context.Status(http.StatusBadRequest).JSON(
+            &fiber.Map{"message": "could not update plant"})
+        return err
+    }
+    context.Status(http.StatusOK).JSON(&fiber.Map{
+        "message": "plant updated successfully",
+        "data":    plantModel,
+    })
+    return nil
+}
+
+// Dodajemy brakującą metodę SetupRoutes
+func (r *Repository) SetupRoutes(app *fiber.App) {
+    app.Get("/", func(c *fiber.Ctx) error {
+        return c.SendString("Hello, World!")
+    })
+    api := app.Group("/api")
+    api.Post("/create_plant", r.CreatePlant)
+    api.Delete("/delete_plant/:id", r.DeletePlant)
+    api.Get("/get_plant/:id", r.GetPlantByID)
+    api.Get("/get_plants", r.GetPlants)
+    api.Put("/update_plant/:id", r.UpdatePlant)
+}
 
 func InitOpenTelemetry(ctx context.Context) (*trace.TracerProvider, error) {
     collectorEndpoint := os.Getenv("OTEL_COLLECTOR_ENDPOINT")
     if collectorEndpoint == "" {
-        collectorEndpoint = "localhost:4317"
+        collectorEndpoint = "localhost:4317" // Domyślny adres collectora
     }
 
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint(collectorEndpoint),
-        otlptracegrpc.WithInsecure(),
+        otlptracegrpc.WithInsecure(), // Użyj WithInsecure(), jeśli collector nie używa TLS
     )
     if err != nil {
         return nil, fmt.Errorf("failed to create the collector exporter: %w", err)
