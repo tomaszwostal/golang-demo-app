@@ -17,6 +17,7 @@ audit: test
 
 .PHONY: test
 test:
+	go get -u ./...
 	go test -v -race ./...
 
 .PHONY: test/cover
