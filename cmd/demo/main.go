@@ -207,10 +207,10 @@ func main() {
         }
     }()
 
-    err = godotenv.Load()
-    if err != nil {
-        log.Fatal("Error loading environment variables")
-    }
+    // err = godotenv.Load()
+    // if err != nil {
+    //     log.Fatal("Error loading environment variables")
+    // }
 
     config := &storage.Config{
         Host:     os.Getenv("DB_HOST"),
