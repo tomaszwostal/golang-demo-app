@@ -23,7 +23,7 @@ ENV DB_HOST= \
     DB_PASSWORD= \
     DB_NAME= \
     DB_SSL= \
-    OTEL_COLLECTOR_ENDPOINT =
+    OTEL_COLLECTOR_ENDPOINT=
 
 WORKDIR /app
 COPY --from=builder /tmp/bin/demo .
