@@ -5,7 +5,7 @@ import (
     "fmt"
     "github.com/gofiber/contrib/otelfiber"
     "github.com/gofiber/fiber/v2"
-    "github.com/joho/godotenv"
+    // "github.com/joho/godotenv"
     "github.com/tomaszwostal/golang-demo-app/models"
     "github.com/tomaszwostal/golang-demo-app/storage"
     "go.opentelemetry.io/otel"
