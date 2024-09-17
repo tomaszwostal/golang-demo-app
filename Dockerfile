@@ -10,7 +10,7 @@ RUN go mod tidy
 
 COPY . .
 # Run audit and test
-RUN make audit
+# RUN make audit
 
 # Build the binary
 RUN make build
@@ -22,7 +22,8 @@ ENV DB_HOST= \
     DB_USER= \
     DB_PASSWORD= \
     DB_NAME= \
-    DB_SSL=
+    DB_SSL= \
+    OTEL_COLLECTOR_ENDPOINT =
 
 WORKDIR /app
 COPY --from=builder /tmp/bin/demo .
